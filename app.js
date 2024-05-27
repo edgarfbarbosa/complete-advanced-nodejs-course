@@ -6,6 +6,14 @@ const express = require('express');
 const app = express();
 
 /**
+ * Middleware para fazer parsing do JSON no corpo das requisições.
+ * O `express.json()` analisa automaticamente o corpo das requisições que têm o conteúdo
+ * do tipo `application/json` e converte-o em um objeto JavaScript.
+ * Isso possibilita o acesso aos dados do corpo da requisição através de `req.body`.
+ */
+app.use(express.json());
+
+/**
  * Lê o arquivo JSON contendo dados dos passeios e o converte para um objeto JavaScript.
  * @const {Array<Object>} tours - Array de objetos contendo os passeios.
  */
@@ -13,13 +21,12 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
 
-// Roteamento.
-// Manipuladores de rota:
+/** Roteamento: */
 
 /**
  * Rota GET para obter os dados dos passeios.
  * @param {string} path - Caminho da URL.
- * @param {function} callback - Middleware, função callback que manipula a requisição e a resposta.
+ * @param {function} callback - Função callback que manipula a requisição e a resposta.
  * @param {Object} req - Objeto de requisição.
  * @param {Object} res - Objeto de resposta.
  */
@@ -32,6 +39,30 @@ app.get('/api/v1/tours', (req, res) => {
       tours: tours, // Dados dos passeios.
     },
   });
+});
+
+/** Rota POST para adicionar um novo passeio. */
+app.post('/api/v1/tours', (req, res) => {
+  // Cria um novo ID baseado no último ID do array de passeios.
+  const newId = tours[tours.length - 1].id + 1;
+  // Cria um novo objeto tour combinando o novo ID com os dados do corpo da requisição.
+  const newTour = Object.assign({ id: newId }, req.body);
+  // Adiciona o novo passeio ao array de passeios.
+  tours.push(newTour);
+  // Adiciona novo passeio no arquivo JSON.
+  fs.writeFile(
+    `${__dirname}/dev-data/data/tours-simple.json`,
+    JSON.stringify(tours),
+    (err) => {
+      // Retorna uma resposta JSON com status 201 (Created) seguindo o padrão JSend.
+      res.status(201).json({
+        status: 'success', // Indicia que a criação do recurso foi bem-sucedida.
+        data: {
+          tour: newTour, // Novo passeio criado.
+        },
+      });
+    }
+  );
 });
 
 const port = 3000;
