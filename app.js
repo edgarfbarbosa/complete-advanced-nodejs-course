@@ -108,6 +108,22 @@ app.patch('/api/v1/tours/:id', (req, res) => {
   });
 });
 
+/** Rota DELETE para remover um passeio existente. */
+app.delete('/api/v1/tours/:id', (req, res) => {
+  if (Number(req.params.id) > tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID',
+    });
+  }
+
+  // Retorna uma resposta JSON com status 204 (No Content) para indicar sucesso.
+  res.status(204).json({
+    status: 'success', // Indica que a remoção foi bem-sucedida.
+    data: null, // Nenhum dado é retornado em uma remoção bem-sucedida.
+  });
+});
+
 const port = 3000;
 const hostname = '127.0.0.1';
 /**
