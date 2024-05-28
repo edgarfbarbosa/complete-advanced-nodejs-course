@@ -41,6 +41,32 @@ app.get('/api/v1/tours', (req, res) => {
   });
 });
 
+/** Rota GET para obter os dados de um passeio específico pelo ID.
+ * @param {string} path - Caminho da URL com parâmetro :id.
+ */
+app.get('/api/v1/tours/:id', (req, res) => {
+  // Converte o ID do parâmetro de string para número.
+  const id = Number(req.params.id);
+  // Encontra o passeio correspondente ao ID.
+  const tour = tours.find((el) => el.id === id);
+
+  // Verifica se o passeio existe
+  if (!tour) {
+    // Retorna uma resposta JSON com status 404 (Not Found) se o ID do passeio for inválido.
+    return res.status(404).json({
+      status: 'fail', // Indica que a requisição falhou.
+      message: 'Invalid ID',
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour, // Dados do passeio.
+    },
+  });
+});
+
 /** Rota POST para adicionar um novo passeio. */
 app.post('/api/v1/tours', (req, res) => {
   // Cria um novo ID baseado no último ID do array de passeios.
