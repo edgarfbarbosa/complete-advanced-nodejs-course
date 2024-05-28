@@ -30,7 +30,7 @@ const tours = JSON.parse(
  * @param {Object} req - Objeto de requisição.
  * @param {Object} res - Objeto de resposta.
  */
-app.get('/api/v1/tours', (req, res) => {
+const getAllTours = (req, res) => {
   // Retorna uma resposta JSON com status 200 (OK) e seguindo o padrão JSend.
   res.status(200).json({
     status: 'success', // Indica que a requisição foi bem-sucedida.
@@ -39,12 +39,12 @@ app.get('/api/v1/tours', (req, res) => {
       tours: tours, // Dados dos passeios.
     },
   });
-});
+};
 
 /** Rota GET para obter os dados de um passeio específico pelo ID.
  * @param {string} path - Caminho da URL com parâmetro :id.
  */
-app.get('/api/v1/tours/:id', (req, res) => {
+const getTour = (req, res) => {
   // Converte o ID do parâmetro de string para número.
   const id = Number(req.params.id);
   // Encontra o passeio correspondente ao ID.
@@ -65,10 +65,10 @@ app.get('/api/v1/tours/:id', (req, res) => {
       tour, // Dados do passeio.
     },
   });
-});
+};
 
 /** Rota POST para adicionar um novo passeio. */
-app.post('/api/v1/tours', (req, res) => {
+const createTour = (req, res) => {
   // Cria um novo ID baseado no último ID do array de passeios.
   const newId = tours[tours.length - 1].id + 1;
   // Cria um novo objeto tour combinando o novo ID com os dados do corpo da requisição.
@@ -89,10 +89,10 @@ app.post('/api/v1/tours', (req, res) => {
       });
     }
   );
-});
+};
 
 /** Rota PATCH para atualizar um passeio existente. */
-app.patch('/api/v1/tours/:id', (req, res) => {
+const updateTour = (req, res) => {
   if (Number(req.params.id) > tours.length) {
     return res.status(404).json({
       status: 'fail',
@@ -106,10 +106,10 @@ app.patch('/api/v1/tours/:id', (req, res) => {
       tour: '<Updated tour here.>',
     },
   });
-});
+};
 
 /** Rota DELETE para remover um passeio existente. */
-app.delete('/api/v1/tours/:id', (req, res) => {
+const deleteTour = (req, res) => {
   if (Number(req.params.id) > tours.length) {
     return res.status(404).json({
       status: 'fail',
@@ -122,7 +122,24 @@ app.delete('/api/v1/tours/:id', (req, res) => {
     status: 'success', // Indica que a remoção foi bem-sucedida.
     data: null, // Nenhum dado é retornado em uma remoção bem-sucedida.
   });
-});
+};
+
+/**
+app.get('/api/v1/tours', getAllTours);
+app.post('/api/v1/tours', createTour);
+app.get('/api/v1/tours/:id', getTour);
+app.patch('/api/v1/tours/:id', updateTour);
+app.delete('/api/v1/tours/:id', deleteTour);
+*/
+
+/** Define a rota '/api/v1/tours' com métodos GET e POST. */
+app.route('/api/v1/tours').get(getAllTours).post(createTour);
+/** Define a rota '/api/v1/tours/:id' com métodos GET, PATCH e DELETE. */
+app
+  .route('/api/v1/tours/:id')
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
 
 const port = 3000;
 const hostname = '127.0.0.1';
