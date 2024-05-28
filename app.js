@@ -91,6 +91,23 @@ app.post('/api/v1/tours', (req, res) => {
   );
 });
 
+/** Rota PATCH para atualizar um passeio existente. */
+app.patch('/api/v1/tours/:id', (req, res) => {
+  if (Number(req.params.id) > tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID',
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour: '<Updated tour here.>',
+    },
+  });
+});
+
 const port = 3000;
 const hostname = '127.0.0.1';
 /**
