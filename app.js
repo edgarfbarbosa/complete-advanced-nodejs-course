@@ -14,6 +14,16 @@ const app = express();
 app.use(express.json());
 
 /**
+ * Middleware global para adicionar a hora da requisição ao objeto de solicitação.
+ * Esse middleware será executado em todas as requisições.
+ * @param {Function} next - Função para passar o controle para o próximo middleware.
+ */
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
+  next();
+});
+
+/**
  * Lê o arquivo JSON contendo dados dos passeios e o converte para um objeto JavaScript.
  * @const {Array<Object>} tours - Array de objetos contendo os passeios.
  */
@@ -34,6 +44,7 @@ const getAllTours = (req, res) => {
   // Retorna uma resposta JSON com status 200 (OK) e seguindo o padrão JSend.
   res.status(200).json({
     status: 'success', // Indica que a requisição foi bem-sucedida.
+    requestedAt: req.requestTime, // Hora em que a requisição foi feita.
     results: tours.length, // Número de resultados encontrados.
     data: {
       tours: tours, // Dados dos passeios.
