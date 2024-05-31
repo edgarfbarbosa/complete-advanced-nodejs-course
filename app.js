@@ -2,8 +2,13 @@
 const fs = require('fs');
 // Requere framework Express.
 const express = require('express');
+// Requere módulo Morgan para registro de requisições HTTP.
+const morgan = require('morgan');
 // Cria uma aplicação Express.
 const app = express();
+
+// Middleware Morgan para registrar requisições HTTP no console.
+app.use(morgan('dev'));
 
 /**
  * Middleware para fazer parsing do JSON no corpo das requisições.
