@@ -4,6 +4,9 @@ const tourController = require('./../controllers/tourController');
 
 const router = express.Router();
 
+// Middleware para verificar ID nas rotas de passeios.
+router.param('id', tourController.checkID);
+
 /** Define a rota '/api/v1/tours' com métodos GET e POST. */
 router
   .route('/')
