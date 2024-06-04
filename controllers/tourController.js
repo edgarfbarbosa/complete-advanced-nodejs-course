@@ -9,6 +9,27 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 );
 
+/**
+ * Middleware para verificar a validade do ID do passeio.
+ * Este middleware é chamado automaticamente quando o parâmetro :id está presenta na rota.
+ * @param {Object} req - Objeto de requisição do Express.
+ * @param {Object} res - Objeto de resposta do Express.
+ * @param {Function} next - Função para passar o controle para o próximo middleware.
+ * @param {string} val - O valor do parâmetro :id da rota.
+ * @returns
+ */
+exports.checkID = (req, res, next, val) => {
+  console.log(`Tour id is ${val}`);
+
+  if (Number(req.params.id) > tours.length) {
+    return res.status(404).json({
+      status: 'fail',
+      message: 'Invalid ID',
+    });
+  }
+  next();
+};
+
 /** Manipuladores de rota */
 /**
  * Rota GET para obter os dados dos passeios.
@@ -37,15 +58,6 @@ exports.getTour = (req, res) => {
   const id = Number(req.params.id);
   // Encontra o passeio correspondente ao ID.
   const tour = tours.find((el) => el.id === id);
-
-  // Verifica se o passeio existe
-  if (!tour) {
-    // Retorna uma resposta JSON com status 404 (Not Found) se o ID do passeio for inválido.
-    return res.status(404).json({
-      status: 'fail', // Indica que a requisição falhou.
-      message: 'Invalid ID',
-    });
-  }
 
   res.status(200).json({
     status: 'success',
@@ -81,13 +93,6 @@ exports.createTour = (req, res) => {
 
 /** Rota PATCH para atualizar um passeio existente. */
 exports.updateTour = (req, res) => {
-  if (Number(req.params.id) > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-
   res.status(200).json({
     status: 'success',
     data: {
@@ -98,13 +103,6 @@ exports.updateTour = (req, res) => {
 
 /** Rota DELETE para remover um passeio existente. */
 exports.deleteTour = (req, res) => {
-  if (Number(req.params.id) > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-
   // Retorna uma resposta JSON com status 204 (No Content) para indicar sucesso.
   res.status(204).json({
     status: 'success', // Indica que a remoção foi bem-sucedida.
