@@ -30,6 +30,20 @@ exports.checkID = (req, res, next, val) => {
   next();
 };
 
+/**
+ * Middleware para verificar a presença de campos obrigatórios no corpo da requisição.
+ * Este middleware é chamado antes de criar um novo passeio.
+ */
+exports.checkBody = (req, res, next) => {
+  if (!req.body.name || !req.body.price) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Missing name or price',
+    });
+  }
+  next();
+};
+
 /** Manipuladores de rota */
 /**
  * Rota GET para obter os dados dos passeios.

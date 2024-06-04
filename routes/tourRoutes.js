@@ -11,7 +11,7 @@ router.param('id', tourController.checkID);
 router
   .route('/')
   .get(tourController.getAllTours)
-  .post(tourController.createTour);
+  .post(tourController.checkBody, tourController.createTour); // O middleware `checkBody` é executado primeiro para garantir que a requisição tenha os dados necessários.
 /** Define a rota '/api/v1/tours/:id' com métodos GET, PATCH e DELETE. */
 router
   .route('/:id')
