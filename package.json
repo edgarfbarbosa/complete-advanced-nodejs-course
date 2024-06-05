@@ -4,12 +4,17 @@
   "description": "Learning Node.js, Express & MongoDB",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start:dev": "nodemon server.js",
+    "start:prod": "cross-env NODE_ENV=production nodemon server.js"
   },
   "author": "Edgar Faria Barbosa",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }
