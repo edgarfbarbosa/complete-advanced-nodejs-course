@@ -10,8 +10,12 @@ const userRouter = require('./routes/userRoutes');
 // Cria uma aplicação Express.
 const app = express();
 
-// Middleware Morgan para registrar requisições HTTP no console.
-app.use(morgan('dev'));
+/** Middlewares */
+
+if (process.env.NODE_ENV === 'development') {
+  // Middleware Morgan para registrar requisições HTTP no console.
+  app.use(morgan('dev'));
+}
 
 /**
  * Middleware para fazer parsing do JSON no corpo das requisições.
