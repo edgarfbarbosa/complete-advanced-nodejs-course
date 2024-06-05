@@ -22,6 +22,12 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 /**
+ * Middleware para servir arquivos estáticos.
+ * @param {string} root - Diretório contendo os arquivos estáticos.
+ */
+app.use(express.static(`${__dirname}/public`));
+
+/**
  * Middleware global para adicionar a hora da requisição ao objeto de solicitação.
  * Esse middleware será executado em todas as requisições.
  * @param {Function} next - Função para passar o controle para o próximo middleware.
