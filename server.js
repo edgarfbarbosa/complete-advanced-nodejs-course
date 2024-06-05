@@ -1,7 +1,12 @@
+// Requere o módulo dotenv para carregar variáveis de ambiente a partir de um arquivo .env
+const dotenv = require('dotenv');
+// Carrega variáveis de ambiente do arquivo config.env
+dotenv.config({ path: './config.env' });
+
 // Importa aplicação Express configurada do arquivo app.js
 const app = require('./app');
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 const hostname = '127.0.0.1';
 /**
  * Inicia o servidor na porta especificada.
