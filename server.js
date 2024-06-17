@@ -23,42 +23,6 @@ mongoose
   })
   .then(() => console.log('DB connection successful!'));
 
-// Definição do esquema para os documentos 'Tour' no MongoDB
-const tourSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'A tour must have a name'],
-    unique: true,
-  },
-  rating: {
-    type: Number,
-    default: 4.5,
-  },
-  price: {
-    type: Number,
-    required: [true, 'A tour must have a price'],
-  },
-});
-
-// Criação do modelo 'Tour' baseado no esquema definido
-const Tour = mongoose.model('Tour', tourSchema);
-
-// Cria uma nova instância do modelo 'Tour' com os dados especificados
-const testTour = new Tour({
-  name: 'The Park Camper',
-  price: 997,
-});
-
-// Salva o documento 'testTour' no banco de dados
-testTour
-  .save()
-  .then((doc) => {
-    console.log(doc);
-  })
-  .catch((err) => {
-    console.log('Error!', err);
-  });
-
 const port = process.env.PORT || 3000;
 const hostname = '127.0.0.1';
 /**
