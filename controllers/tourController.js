@@ -9,33 +9,50 @@ const Tour = require('./../models/tourModel');
  * @param {Object} req - Objeto de requisição.
  * @param {Object} res - Objeto de resposta.
  */
-exports.getAllTours = (req, res) => {
-  // Retorna uma resposta JSON com status 200 (OK) e seguindo o padrão JSend.
-  res.status(200).json({
-    status: 'success', // Indica que a requisição foi bem-sucedida.
-    requestedAt: req.requestTime, // Hora em que a requisição foi feita.
-    // results: tours.length, // Número de resultados encontrados.
-    // data: {
-    //   tours: tours, // Dados dos passeios.
-    // },
-  });
+exports.getAllTours = async (req, res) => {
+  try {
+    // Usa o método find para buscar todos os documentos na coleção 'tours'
+    const tours = await Tour.find();
+
+    // Retorna uma resposta JSON com status 200 (OK) e seguindo o padrão JSend:
+    res.status(200).json({
+      status: 'success', // Indica que a requisição foi bem-sucedida.
+      results: tours.length, // Número de resultados encontrados.
+      data: {
+        tours: tours, // Dados dos passeios.
+      },
+    });
+  } catch (err) {
+    // Retorna uma resposta JSON com status 404 (Not Found) se houver um erro na busca:
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
 /** Rota GET para obter os dados de um passeio específico pelo ID.
  * @param {string} path - Caminho da URL com parâmetro :id.
  */
-exports.getTour = (req, res) => {
-  // Converte o ID do parâmetro de string para número.
-  const id = Number(req.params.id);
-  // Encontra o passeio correspondente ao ID.
-  // const tour = tours.find((el) => el.id === id);
+exports.getTour = async (req, res) => {
+  try {
+    // Usa o método findById() para buscar um documento na coleção 'tours' pelo ID
+    const tour = await Tour.findById(req.params.id);
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   data: {
-  //     tour, // Dados do passeio.
-  //   },
-  // });
+    // Retorna uma resposta JSON com status 200 (OK) se documento for encontrado:
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour, // Dados do passeio.
+      },
+    });
+  } catch (err) {
+    // Retorna uma resposta JSON com status 404 (Not Found) se houver um erro na busca ou se o documento não for encontrado:
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
 /** Rota POST para adicionar um novo passeio. */
@@ -56,8 +73,8 @@ exports.createTour = async (req, res) => {
   } catch (err) {
     // Retorna uma resposta JSON com status 400 (Bad Request) se houver um erro.
     res.status(400).json({
-      status: fail,
-      message: error,
+      status: 'fail',
+      message: 'Invalid data sent!',
     });
   }
 };
