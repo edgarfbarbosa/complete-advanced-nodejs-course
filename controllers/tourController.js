@@ -80,13 +80,32 @@ exports.createTour = async (req, res) => {
 };
 
 /** Rota PATCH para atualizar um passeio existente. */
-exports.updateTour = (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    data: {
-      tour: '<Updated tour here.>',
-    },
-  });
+exports.updateTour = async (req, res) => {
+  try {
+    /**
+     * Encontra e atualiza o documento correspondente pelo seu ID.
+     * @param {string} req.params.id - O ID do documento que será atualizado.
+     * @param {object} req.body - Objeto contendo os dados de atualização.
+     * @param {boolean} options.new - Retorna o documento atualizado.
+     * @param {boolean} options.runValidators - Aplica as validações do esquema do modelo durante a atualização.
+     */
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        tour, // Dados do passeio atualizado.
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
 /** Rota DELETE para remover um passeio existente. */
