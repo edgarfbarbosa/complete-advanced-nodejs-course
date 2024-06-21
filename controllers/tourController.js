@@ -109,10 +109,18 @@ exports.updateTour = async (req, res) => {
 };
 
 /** Rota DELETE para remover um passeio existente. */
-exports.deleteTour = (req, res) => {
-  // Retorna uma resposta JSON com status 204 (No Content) para indicar sucesso.
-  res.status(204).json({
-    status: 'success', // Indica que a remoção foi bem-sucedida.
-    data: null, // Nenhum dado é retornado em uma remoção bem-sucedida.
-  });
+exports.deleteTour = async (req, res) => {
+  try {
+    await Tour.findByIdAndDelete(req.params.id);
+    // Retorna uma resposta JSON com status 204 (No Content) para indicar sucesso.
+    res.status(204).json({
+      status: 'success',
+      data: null, // É uma prática comum não enviar nenhum dado de volta ao cliente em uma operação de exclusão.
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
