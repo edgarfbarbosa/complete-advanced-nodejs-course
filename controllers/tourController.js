@@ -4,15 +4,29 @@ const Tour = require('./../models/tourModel');
 /** Manipuladores de rota */
 /**
  * Rota GET para obter os dados dos passeios.
- * @param {string} path - Caminho da URL.
- * @param {function} callback - Função callback que manipula a requisição e a resposta.
  * @param {Object} req - Objeto de requisição.
  * @param {Object} res - Objeto de resposta.
  */
 exports.getAllTours = async (req, res) => {
   try {
-    // Usa o método find para buscar todos os documentos na coleção 'tours'
-    const tours = await Tour.find();
+    // Construção da query a partir dos parâmetros de consulta (query parameters) recebidos
+    const queryObj = { ...req.query };
+
+    // Campos que serão excluídos da query, pois não são usados para filtragem de dados
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    excludedFields.forEach((el) => delete queryObj[el]);
+
+    // Usa o método find para buscar todos os documentos na coleção 'tours' com base nos parâmetros de filtragem
+    const query = Tour.find(queryObj);
+
+    // const query = await Tour.find()
+    //   .where('duration')
+    //   .equals(5)
+    //   .where('difficulty')
+    //   .equals('easy');
+
+    // Executa a query e armazena os resultados
+    const tours = await query;
 
     // Retorna uma resposta JSON com status 200 (OK) e seguindo o padrão JSend:
     res.status(200).json({
