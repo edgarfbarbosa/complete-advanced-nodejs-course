@@ -16,14 +16,14 @@ exports.getAllTours = async (req, res) => {
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    // Usa o método find para buscar todos os documentos na coleção 'tours' com base nos parâmetros de filtragem
-    const query = Tour.find(queryObj);
+    // Converte queryObj em string para aplicar substituição
+    let queryStr = JSON.stringify(queryObj);
 
-    // const query = await Tour.find()
-    //   .where('duration')
-    //   .equals(5)
-    //   .where('difficulty')
-    //   .equals('easy');
+    // Aplica operadores de comparação do MongoDB convertendo-os para a sintaxe correta
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+
+    // Usa o método find para buscar todos os documentos na coleção 'tours' com base nos parâmetros de filtragem
+    const query = Tour.find(JSON.parse(queryStr));
 
     // Executa a query e armazena os resultados
     const tours = await query;
