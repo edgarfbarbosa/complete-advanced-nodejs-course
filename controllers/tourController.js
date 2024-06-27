@@ -12,6 +12,7 @@ exports.getAllTours = async (req, res) => {
     // Construção da query a partir dos parâmetros de consulta (query parameters) recebidos
     const queryObj = { ...req.query };
 
+    /** 1. Filtragem: */
     // Campos que serão excluídos da query, pois não são usados para filtragem de dados
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
     excludedFields.forEach((el) => delete queryObj[el]);
@@ -25,12 +26,22 @@ exports.getAllTours = async (req, res) => {
     // Usa o método find para buscar todos os documentos na coleção 'tours' com base nos parâmetros de filtragem
     let query = Tour.find(JSON.parse(queryStr));
 
+    /** 2. Ordenação: */
     // Verifica se o parâmetro de ordenação (sort) foi fornecido na query
     if (req.query.sort) {
       const sortBy = req.query.sort.split(',').join(' ');
       query = query.sort(sortBy);
     } else {
       query = query.sort('-createdAt');
+    }
+
+    /** 3. Limitação de Campos: */
+    // Verifica se o parâmetro 'fields' foi fornecido na query string
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+      query = query.select(fields);
+    } else {
+      query = query.select('-__v');
     }
 
     // Executa a query e armazena os resultados
