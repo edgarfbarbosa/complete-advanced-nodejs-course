@@ -23,7 +23,15 @@ exports.getAllTours = async (req, res) => {
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
 
     // Usa o método find para buscar todos os documentos na coleção 'tours' com base nos parâmetros de filtragem
-    const query = Tour.find(JSON.parse(queryStr));
+    let query = Tour.find(JSON.parse(queryStr));
+
+    // Verifica se o parâmetro de ordenação (sort) foi fornecido na query
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort('-createdAt');
+    }
 
     // Executa a query e armazena os resultados
     const tours = await query;
