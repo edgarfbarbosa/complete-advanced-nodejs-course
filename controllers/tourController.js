@@ -44,6 +44,22 @@ exports.getAllTours = async (req, res) => {
       query = query.select('-__v');
     }
 
+    /** 4. Paginação: */
+    // Define a página atual e o limite de itens por página a partir dos parâmetros da query
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+
+    // Aplica o método skip() para pular documentos e limit() para limitar o número de documentos retornados
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      // Conta o número total de documentos na coleção 'tours'
+      const numTours = await Tour.countDocuments();
+      // Verifica se o 'skip' ultrapassa o número total de documentos
+      if (skip >= numTours) throw new Error('This page does not exist');
+    }
+
     // Executa a query e armazena os resultados
     const tours = await query;
 
