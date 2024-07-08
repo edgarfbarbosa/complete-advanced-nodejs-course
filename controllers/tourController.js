@@ -1,6 +1,16 @@
 // Requere o modelo 'Tour'
 const Tour = require('./../models/tourModel');
 
+/**
+ * Middleware para definir parâmetros padrão para a rota 'top-5-cheap'.
+ */
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
+
 /** Manipuladores de rota */
 /**
  * Rota GET para obter os dados dos passeios.
