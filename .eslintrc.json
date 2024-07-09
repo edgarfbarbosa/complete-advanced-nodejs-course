@@ -18,6 +18,6 @@
     "no-unused-vars": ["error", { "argsIgnorePattern": "req|res|next|val" }],
     "import/no-useless-path-segments": "warn",
     "no-undef": "warn",
-    "node/no-unsupported-features/es-syntax": "warn"
+    "node/no-unsupported-features/es-syntax": "airbnb"
   }
 }
