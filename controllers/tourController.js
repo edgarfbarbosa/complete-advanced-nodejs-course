@@ -1,5 +1,6 @@
 // Requere o modelo 'Tour'
 const Tour = require('./../models/tourModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 /**
  * Middleware para definir parâmetros padrão para a rota 'top-5-cheap'.
@@ -19,59 +20,14 @@ exports.aliasTopTours = (req, res, next) => {
  */
 exports.getAllTours = async (req, res) => {
   try {
-    // Construção da query a partir dos parâmetros de consulta (query parameters) recebidos
-    const queryObj = { ...req.query };
-
-    /** 1. Filtragem: */
-    // Campos que serão excluídos da query, pois não são usados para filtragem de dados
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
-    excludedFields.forEach((el) => delete queryObj[el]);
-
-    // Converte queryObj em string para aplicar substituição
-    let queryStr = JSON.stringify(queryObj);
-
-    // Aplica operadores de comparação do MongoDB convertendo-os para a sintaxe correta
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
-    // Usa o método find para buscar todos os documentos na coleção 'tours' com base nos parâmetros de filtragem
-    let query = Tour.find(JSON.parse(queryStr));
-
-    /** 2. Ordenação: */
-    // Verifica se o parâmetro de ordenação (sort) foi fornecido na query
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort('-createdAt');
-    }
-
-    /** 3. Limitação de Campos: */
-    // Verifica se o parâmetro 'fields' foi fornecido na query string
-    if (req.query.fields) {
-      const fields = req.query.fields.split(',').join(' ');
-      query = query.select(fields);
-    } else {
-      query = query.select('-__v');
-    }
-
-    /** 4. Paginação: */
-    // Define a página atual e o limite de itens por página a partir dos parâmetros da query
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 100;
-    const skip = (page - 1) * limit;
-
-    // Aplica o método skip() para pular documentos e limit() para limitar o número de documentos retornados
-    query = query.skip(skip).limit(limit);
-
-    if (req.query.page) {
-      // Conta o número total de documentos na coleção 'tours'
-      const numTours = await Tour.countDocuments();
-      // Verifica se o 'skip' ultrapassa o número total de documentos
-      if (skip >= numTours) throw new Error('This page does not exist');
-    }
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
 
     // Executa a query e armazena os resultados
-    const tours = await query;
+    const tours = await features.query;
 
     // Retorna uma resposta JSON com status 200 (OK) e seguindo o padrão JSend:
     res.status(200).json({
