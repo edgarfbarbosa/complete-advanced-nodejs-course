@@ -16,6 +16,8 @@ router
   .route('/top-5-cheap')
   .get(tourController.aliasTopTours, tourController.getAllTours);
 
+router.route('/tour-stats').get(tourController.getTourStats);
+
 /** Define a rota '/api/v1/tours' com métodos GET e POST. */
 router
   .route('/')
