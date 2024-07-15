@@ -140,12 +140,19 @@ exports.deleteTour = async (req, res) => {
   }
 };
 
+/**
+ * Obtém estatísticas de tours agregados, como a média de avaliações, preços e quantidade.
+ * @returns Retorna um objeto JSON com o status e os dados das estatísticas.
+ */
 exports.getTourStats = async (req, res) => {
   try {
+    // Executa um pipeline de agregação na coleção 'Tour'
     const stats = await Tour.aggregate([
+      // Primeira etapa: filtra tours com média de avaliações maior ou igual a 4.5
       {
         $match: { ratingsAverage: { $gte: 4.5 } },
       },
+      // Segunda etapa: agrupa os documentos por dificuldade e calcula estatísticas
       {
         $group: {
           _id: { $toUpper: '$difficulty' },
@@ -157,6 +164,7 @@ exports.getTourStats = async (req, res) => {
           maxPrice: { $max: '$price' },
         },
       },
+      // Terceira etapa: ordena os grupos pelo preço médio em ordem crescente
       {
         $sort: { avgPrice: 1 },
       },
@@ -166,6 +174,70 @@ exports.getTourStats = async (req, res) => {
       status: 'success',
       data: {
         stats,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err,
+    });
+  }
+};
+
+/**
+ * Obtém um plano mensal para tours, mostrando a quantidade de inícios de tours por mês e os nomes dos tours.
+ * @returns Retorna um objeto JSON com os dados do número de tours iniciados em cada mês.
+ */
+exports.getMonthlyPlan = async (req, res) => {
+  try {
+    // Converte o ano passado como parâmetro para um número
+    const year = req.params.year * 1;
+
+    // Executa um pipeline de agregação na coleção 'Tour'
+    const plan = await Tour.aggregate([
+      // Primeira etapa: desestrutura a array de datas de início para documentos separados
+      {
+        $unwind: '$startDates',
+      },
+      // Segunda etapa: filtra documentos cujas datas de início estão dentro do ano especificado
+      {
+        $match: {
+          startDates: {
+            $gte: new Date(`${year}-01-01`),
+            $lte: new Date(`${year}-12-31`),
+          },
+        },
+      },
+      // Terceira etapa: agrupa documentos pelo mês de início e acumula dados
+      {
+        $group: {
+          _id: { $month: '$startDates' },
+          numTourStarts: { $sum: 1 },
+          tours: { $push: '$name' },
+        },
+      },
+      // Quarta etapa: adiciona o campo 'month' aos documentos do grupo
+      {
+        $addFields: { month: '$_id' },
+      },
+      // Quinta etapa: projeta os documentos para excluir o campo '_id'
+      {
+        $project: { _id: 0 },
+      },
+      // Sexta etapa: ordena os documentos pelo número de inícios de tours em ordem decrescente
+      {
+        $sort: { numTourStarts: -1 },
+      },
+      // Sétima etapa: limita o resultado aos 12 documentos principais
+      {
+        $limit: 12,
+      },
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        plan,
       },
     });
   } catch (err) {

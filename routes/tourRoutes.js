@@ -17,6 +17,7 @@ router
   .get(tourController.aliasTopTours, tourController.getAllTours);
 
 router.route('/tour-stats').get(tourController.getTourStats);
+router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
 /** Define a rota '/api/v1/tours' com métodos GET e POST. */
 router
