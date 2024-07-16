@@ -1,6 +1,8 @@
 // Requere o mongoose para interagir com o banco de dados MongoDB
 const mongoose = require('mongoose');
 
+const slugify = require('slugify');
+
 // Definição do esquema para os documentos 'Tour' no MongoDB
 const tourSchema = new mongoose.Schema(
   {
@@ -55,6 +57,7 @@ const tourSchema = new mongoose.Schema(
       select: false,
     },
     startDates: [Date],
+    slug: String,
   },
   // As opções toJSON e toObject permitem a inclusão de propriedades virtuais.
   {
@@ -73,6 +76,27 @@ const tourSchema = new mongoose.Schema(
  */
 tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
+});
+
+/**
+ * Adiciona o middleware pré-salvamento ao esquema 'tourSchema'.
+ * Esta função será executada antes de um documento 'Tour' ser salvo no banco de dados.
+ * Neste middleware, é criado um slug a partir do nome do tour. A função `slugify` é usada para gerar o slug.
+ */
+tourSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+/**
+ * Adiciona middleware pós-salvamento ao esquema 'tourSchema'.
+ * Essa função será executada depois que um documento 'Tour' for salvo no banco de dados.
+ * Neste middleware, o documento salvo é registrado no console.
+ * @param {object} doc - O documento 'Tour' que foi salvo.
+ */
+tourSchema.post('save', function (doc, next) {
+  console.log(doc);
+  next();
 });
 
 /**
