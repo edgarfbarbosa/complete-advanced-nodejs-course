@@ -58,6 +58,10 @@ const tourSchema = new mongoose.Schema(
     },
     startDates: [Date],
     slug: String,
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   // As opções toJSON e toObject permitem a inclusão de propriedades virtuais.
   {
@@ -94,8 +98,37 @@ tourSchema.pre('save', function (next) {
  * Neste middleware, o documento salvo é registrado no console.
  * @param {object} doc - O documento 'Tour' que foi salvo.
  */
-tourSchema.post('save', function (doc, next) {
-  console.log(doc);
+// tourSchema.post('save', function (doc, next) {
+//   console.log(doc);
+//   next();
+// });
+
+/**
+ * Middleware pré-consulta para excluir tours secretos dos resultados de consulta.
+ * Este middleware é executado antes de qualquer consulta do tipo 'find' ou 'findOne'.
+ */
+// tourSchema.pre('find', function (next) {
+// tourSchema.pre('findOne', function (next) {
+tourSchema.pre(/^find/, function (next) {
+  this.find({ secretTour: { $ne: true } });
+  next();
+});
+
+/**
+ * Middleware pós-consulta para registrar os documentos encontrados no console.
+ * Este middleware é executado após qualquer consulta do tipo 'find' ou 'findOne'.
+ */
+// tourSchema.post(/^find/, function (docs, next) {
+//   console.log(docs);
+//   next();
+// });
+
+/**
+ * Middleware pré-agregação para excluir tours secretos dos resultados de agregação.
+ * Este middleware é excutado antes de qualquer operação de agregação.
+ */
+tourSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
   next();
 });
 
