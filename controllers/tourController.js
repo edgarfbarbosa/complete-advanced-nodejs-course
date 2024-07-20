@@ -89,7 +89,7 @@ exports.createTour = async (req, res) => {
     // Retorna uma resposta JSON com status 400 (Bad Request) se houver um erro.
     res.status(400).json({
       status: 'fail',
-      message: 'Invalid data sent!',
+      message: err,
     });
   }
 };
