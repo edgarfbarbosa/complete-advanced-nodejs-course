@@ -3,6 +3,11 @@ const express = require('express');
 // Requere módulo Morgan para registro de requisições HTTP.
 const morgan = require('morgan');
 
+// Requere a classe AppError para criar e manipular erros de aplicação personalizados.
+const AppError = require('./utils/appError');
+// Requere o manipulador de erros global para tratar todos os erros capturados.
+const globalErrorHandler = require('./controllers/errorController');
+
 // Requere manipuladores de rotas para passeios e usuários.
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
@@ -45,33 +50,12 @@ app.use((req, res, next) => {
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 
-/** Lidando com rotas não tratadas */
+/** Middleware para capturar todas as rotas não tratadas: */
 app.all('*', (req, res, next) => {
-  res.status(404).json({
-    status: 'fail',
-    message: `Can't find ${req.originalUrl} on this server!`,
-  });
-
-  /*
-  const err = new Error(`Can't find ${req.originalUrl} on this server!`);
-  err.status = 'fail';
-  err.statusCode = 404;
-
-  next(err);
-  */
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404)); // Cria um novo erro AppError e passa-o para o próximo middleware
 });
 
-app.use((err, req, res, next) => {
-  // Define um statusCode para o erro, usando 500 como padrão se não estiver definido
-  err.statusCode = err.statusCode || 500;
-  // Define um status para o erro, usando 'error' como padrão se não estiver definido
-  err.status = err.status || 'error';
-
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
-  });
-});
+app.use(globalErrorHandler); // Utiliza o manipulador de erros global para lidar com todos os erros capturados.
 
 // Exporta a aplicação Express
 module.exports = app;
