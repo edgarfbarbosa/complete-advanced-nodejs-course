@@ -2,6 +2,7 @@
 const Tour = require('./../models/tourModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
 /**
  * Middleware para definir parâmetros padrão para a rota 'top-5-cheap'.
@@ -46,6 +47,10 @@ exports.getTour = catchAsync(async (req, res, next) => {
   // Usa o método findById() para buscar um documento na coleção 'tours' pelo ID
   const tour = await Tour.findById(req.params.id);
 
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
   // Retorna uma resposta JSON com status 200 (OK) se documento for encontrado:
   res.status(200).json({
     status: 'success',
@@ -85,6 +90,10 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
 
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
   res.status(200).json({
     status: 'success',
     data: {
@@ -95,7 +104,12 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 
 /** Rota DELETE para remover um passeio existente. */
 exports.deleteTour = catchAsync(async (req, res, next) => {
-  await Tour.findByIdAndDelete(req.params.id);
+  const tour = await Tour.findByIdAndDelete(req.params.id);
+
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
   // Retorna uma resposta JSON com status 204 (No Content) para indicar sucesso.
   res.status(204).json({
     status: 'success',
