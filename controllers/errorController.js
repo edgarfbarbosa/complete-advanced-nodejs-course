@@ -1,4 +1,37 @@
 /**
+ * Envia uma resposta de erro detalhada no ambiente de desenvolvimento.
+ * @param {*} err - Objeto de erro capturado.
+ * @param {*} res - Objeto de resposta.
+ */
+const sendErrorDev = (err, res) => {
+  res.status(err.statusCode).json({
+    status: err.status,
+    error: err,
+    message: err.message,
+    stack: err.stack, // Stack trace do erro, útil para debugging
+  });
+};
+
+/**
+ * Envia uma resposta de erro apropriada no ambiente de produção.
+ */
+const sendErrorProd = (err, res) => {
+  if (err.isOperational) {
+    // Se o erro for operacional, ou seja, esperado e tratado, envia detalhes
+    res.status(err.statusCode).json({
+      status: err.status,
+      message: err.message,
+    });
+  } else {
+    // Se o erro não for operacional, ou seja, inesperado, não envia detalhes para o cliente
+    res.status(500).json({
+      status: 'error',
+      message: 'Something went very wrong!', // Mensagem genérica para evitar exposição de informações sensíveis
+    });
+  }
+};
+
+/**
  * Middleware global para tratamento de erros.
  * @param {*} err - O objeto de erro capturado.
  * @param {*} req - O objeto de solicitação.
@@ -13,8 +46,9 @@ module.exports = (err, req, res, next) => {
   // Define um status para o erro, usando 'error' como padrão se não estiver definido
   err.status = err.status || 'error';
 
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
-  });
+  if (process.env.NODE_ENV === 'development') {
+    sendErrorDev(err, res); // Envia erro detalhado em ambiente de desenvolvimento
+  } else if (process.env.NODE_ENV === 'production') {
+    sendErrorProd(err, res); // Envia erro apropriado em ambiente de produção
+  }
 };
