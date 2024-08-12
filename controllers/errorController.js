@@ -11,6 +11,17 @@ const handleCastErrorDB = (err) => {
 };
 
 /**
+ * Trata erros de duplicidade de campos no banco de dados.
+ * @param {*} err - O objeto de erro capturado.
+ * @returns {AppError} - Retorna uma nova instância de AppError com mensagem e código de status.
+ */
+const handleDuplicateFieldsDB = (err) => {
+  const value = err.keyValue.name;
+  const message = `Duplicate field value: ${value}. Please use another value!`;
+  return new AppError(message, 400);
+};
+
+/**
  * Envia uma resposta de erro detalhada no ambiente de desenvolvimento.
  * @param {*} err - Objeto de erro capturado.
  * @param {*} res - Objeto de resposta.
@@ -66,6 +77,8 @@ module.exports = (err, req, res, next) => {
 
     // Verifica se o erro é um CastError e trata-o de forma apropriada:
     if (error.name === 'CastError') error = handleCastErrorDB(error);
+    // Verifica se o código de erro é 11000 (erro de duplicidade) e trata-o de forma apropriada:
+    if (error.code === 11000) error = handleDuplicateFieldsDB(error);
 
     sendErrorProd(error, res); // Envia erro apropriado em ambiente de produção
   }
