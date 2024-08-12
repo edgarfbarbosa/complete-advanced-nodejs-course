@@ -1,3 +1,15 @@
+const AppError = require('../utils/appError');
+
+/**
+ * Trata o erro de conversão de tipos no banco de dados.
+ * @param {*} err - Objeto de erro original.
+ * @returns {AppError} - Retorna uma nova instância de AppError com mensagem e código de status.
+ */
+const handleCastErrorDB = (err) => {
+  const message = `Invalid ${err.path}: ${err.value}`;
+  return new AppError(message, 400);
+};
+
 /**
  * Envia uma resposta de erro detalhada no ambiente de desenvolvimento.
  * @param {*} err - Objeto de erro capturado.
@@ -49,6 +61,12 @@ module.exports = (err, req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     sendErrorDev(err, res); // Envia erro detalhado em ambiente de desenvolvimento
   } else if (process.env.NODE_ENV === 'production') {
-    sendErrorProd(err, res); // Envia erro apropriado em ambiente de produção
+    let error = { ...err }; // Cria uma cópia do objeto de erro original.
+    error.name = err.name; // Garante que a propriedade 'name' do erro original seja preservada.
+
+    // Verifica se o erro é um CastError e trata-o de forma apropriada:
+    if (error.name === 'CastError') error = handleCastErrorDB(error);
+
+    sendErrorProd(error, res); // Envia erro apropriado em ambiente de produção
   }
 };
