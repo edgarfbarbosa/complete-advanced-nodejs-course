@@ -22,6 +22,17 @@ const handleDuplicateFieldsDB = (err) => {
 };
 
 /**
+ * Trata erros de validação no banco de dados e cria uma mensagem de erro apropriada.
+ * @param {*} err - Objeto de erro capturado.
+ */
+const handleValidationErrorDB = (err) => {
+  const errors = Object.values(err.errors).map((el) => el.message);
+  const message = `Invalid input data. ${errors.join('. ')}`;
+
+  return new AppError(message, 400);
+};
+
+/**
  * Envia uma resposta de erro detalhada no ambiente de desenvolvimento.
  * @param {*} err - Objeto de erro capturado.
  * @param {*} res - Objeto de resposta.
@@ -79,6 +90,9 @@ module.exports = (err, req, res, next) => {
     if (error.name === 'CastError') error = handleCastErrorDB(error);
     // Verifica se o código de erro é 11000 (erro de duplicidade) e trata-o de forma apropriada:
     if (error.code === 11000) error = handleDuplicateFieldsDB(error);
+    // Verifica se o erro é um ValidationError e trata-o de forma apropriada:
+    if (error.name === 'ValidationError')
+      error = handleValidationErrorDB(error);
 
     sendErrorProd(error, res); // Envia erro apropriado em ambiente de produção
   }
