@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken'); // Importa o módulo jsonwebtoken, usado para gerar e verificar tokens JWT
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 
@@ -16,8 +17,18 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
   });
 
+  /**
+   * Gera um token JWT usando o método `sign`, passando como payload o id do novo usuário.
+   * O segredo (secret) é extraído da variável de ambiente `JWT_SECRET`.
+   * Define o tempo de expiração do token usando variável de ambiente `JWT_EXPIRES_IN`.
+   */
+  const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+
   res.status(201).json({
     status: 'success',
+    token, // Adiciona o token JWT na resposta, para que o cliente possa utilizá-lo nas próximas requisições
     data: {
       user: newUser,
     },
