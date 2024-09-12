@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minlength: 8,
+    select: false,
   },
   passwordConfirm: {
     type: String,
@@ -53,6 +54,20 @@ userSchema.pre('save', async function (next) {
 
   next();
 });
+
+/**
+ * Método de instância para comparar a senha fornecida pelo usuário com a senha armazenada no banco de dados.
+ * Utiliza a função `compare` da biblioteca bcryptjs, que compara o hash da senha com a senha em texto simples.
+ * @param {string} candidatePassword - Senha fornecida pelo usuário ao tentar fazer login.
+ * @param {string} userPassword - Senha com hash armazenada no banco de dados.
+ * @returns {boolean} Retorna true se as senhas conincidirem, caso contrário, false.
+ */
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword,
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
 
 const User = mongoose.model('User', userSchema);
 
