@@ -1,7 +1,28 @@
 const jwt = require('jsonwebtoken'); // Importa o módulo jsonwebtoken, usado para gerar e verificar tokens JWT
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
+const AppError = require('./../utils/appError');
 
+/**
+ * Gera um token JWT para autenticação do usuário.
+ * O token gerado contém o ID do usuário como payload e é assinado
+ * utilizando um segredo definido na variável de ambiente `JWT_SECRET`.
+ * O token também tem um tempo de expiração, configurado na variável de
+ * ambiente `JWT_EXPIRES_IN`.
+ * @param {string} id - ID do usuário para quem o token será gerado.
+ * @returns {string} Token JWT assinado, que será utilizado para autenticação.
+ */
+const signToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
+/**
+ * Controlador para a rota de cadastro de novos usuários.
+ * Cria um novo usuário com os dados fornecidos e gera um token JWT para ele.
+ * @returns Retorna a resposta com o status de sucesso e o token JWT gerado.
+ */
 exports.signup = catchAsync(async (req, res, next) => {
   /**
    * Ao usar esta abordagem, estamos explicitamente escolhendo
@@ -17,14 +38,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
   });
 
-  /**
-   * Gera um token JWT usando o método `sign`, passando como payload o id do novo usuário.
-   * O segredo (secret) é extraído da variável de ambiente `JWT_SECRET`.
-   * Define o tempo de expiração do token usando variável de ambiente `JWT_EXPIRES_IN`.
-   */
-  const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
+  const token = signToken(newUser._id); // Gera o token JWT para o novo usuário
 
   res.status(201).json({
     status: 'success',
@@ -32,5 +46,35 @@ exports.signup = catchAsync(async (req, res, next) => {
     data: {
       user: newUser,
     },
+  });
+});
+
+/**
+ * Controlador para a rota de login de usuários.
+ * Verifica se o usuário existe e se a senha está correta.
+ * Caso ambos sejam válidos, gera um token JWT e envia ao cliente.
+ * @returns Retorna a resposta com o token JWT gerado.
+ */
+exports.login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  // 1) Verifica se email e senha foram fornecidos
+  if (!email || !password) {
+    return next(new AppError('Please provide email and password!', 400));
+  }
+
+  // 2) Verifica se o usuário existe e se a senha está correta
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user || !(await user.correctPassword(password, user.password))) {
+    return next(new AppError('Incorrect email or password', 401));
+  }
+
+  // 3) Se tudo estiver correto, gera um token JWT e envia ao cliente
+  const token = signToken(user._id);
+
+  res.status(200).json({
+    status: 'success',
+    token,
   });
 });
