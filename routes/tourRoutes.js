@@ -2,6 +2,8 @@ const express = require('express');
 
 const tourController = require('./../controllers/tourController');
 
+const authController = require('./../controllers/authController');
+
 const router = express.Router();
 
 // Middleware para verificar ID nas rotas de passeios.
@@ -22,7 +24,7 @@ router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 /** Define a rota '/api/v1/tours' com métodos GET e POST. */
 router
   .route('/')
-  .get(tourController.getAllTours)
+  .get(authController.protect, tourController.getAllTours)
   .post(tourController.createTour);
 /** Define a rota '/api/v1/tours/:id' com métodos GET, PATCH e DELETE. */
 router

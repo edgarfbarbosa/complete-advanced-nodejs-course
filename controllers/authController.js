@@ -78,3 +78,27 @@ exports.login = catchAsync(async (req, res, next) => {
     token,
   });
 });
+
+exports.protect = catchAsync(async (req, res, next) => {
+  // 1) Obtém o token e verifica se ele está presente
+  let token;
+
+  // Verifica se o cabeçalho `authorization` contém um token do tipo Bearer
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  console.log(token);
+
+  // Caso o token não esteja presente, retorna um erro informando que o usuário não está logado
+  if (!token) {
+    return next(
+      new AppError('You are not logged in! Please log in to get access.', 401),
+    );
+  }
+
+  next();
+});
