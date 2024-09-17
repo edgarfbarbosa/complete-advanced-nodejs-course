@@ -1,3 +1,4 @@
+const { promisify } = require('util'); // Importa o método `promisify` do módulo util
 const jwt = require('jsonwebtoken'); // Importa o módulo jsonwebtoken, usado para gerar e verificar tokens JWT
 const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
@@ -91,14 +92,21 @@ exports.protect = catchAsync(async (req, res, next) => {
     token = req.headers.authorization.split(' ')[1];
   }
 
-  console.log(token);
-
   // Caso o token não esteja presente, retorna um erro informando que o usuário não está logado
   if (!token) {
     return next(
       new AppError('You are not logged in! Please log in to get access.', 401),
     );
   }
+
+  // 2) Verifica se o token é válido, verifica se alguém manipulou os dados ou se o token já expirou
+  /**
+   * Objeto contendo as informações decodificadas do token JWT.
+   * É o resultado da verificação do token JWT, incluindo o payload, que contém o ID do usuário e outras informações.
+   * `jwt.verify` é transformado em uma função que retorna uma Promise usando `promisify`.
+   */
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  console.log(decoded);
 
   next();
 });
