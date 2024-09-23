@@ -33,6 +33,18 @@ const handleValidationErrorDB = (err) => {
 };
 
 /**
+ * Trata erros de JWT inválido.
+ */
+const handleJWTError = (err) =>
+  new AppError('Invalid token. Please log in again!', 401);
+
+/**
+ * Trata erros de expiração de JWT.
+ */
+const handleJWTExpiredError = (err) =>
+  new AppError('Your token has expired! Please log in again.', 401);
+
+/**
  * Envia uma resposta de erro detalhada no ambiente de desenvolvimento.
  * @param {*} err - Objeto de erro capturado.
  * @param {*} res - Objeto de resposta.
@@ -93,6 +105,11 @@ module.exports = (err, req, res, next) => {
     // Verifica se o erro é um ValidationError e trata-o de forma apropriada:
     if (error.name === 'ValidationError')
       error = handleValidationErrorDB(error);
+    // Verifica se o erro é um JsonWebTokenError e trata-o de forma apropriada
+    if (error.name === 'JsonWebTokenError') error = handleJWTError(error);
+    // Verifica se o erro é um TokenExpiredError e trata-o de forma apropriada
+    if (error.name === 'TokenExpiredError')
+      error = handleJWTExpiredError(error);
 
     sendErrorProd(error, res); // Envia erro apropriado em ambiente de produção
   }
