@@ -106,7 +106,18 @@ exports.protect = catchAsync(async (req, res, next) => {
    * `jwt.verify` é transformado em uma função que retorna uma Promise usando `promisify`.
    */
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  console.log(decoded);
+
+  // 3) Verifica se o usuário ainda existe
+  const freshUser = await User.findById(decoded.id);
+
+  if (!freshUser) {
+    return next(
+      new AppError(
+        'The token belonging to this tokes user does no longer exists.',
+        401,
+      ),
+    );
+  }
 
   next();
 });
