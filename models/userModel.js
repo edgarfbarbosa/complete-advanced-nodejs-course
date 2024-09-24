@@ -37,6 +37,7 @@ const userSchema = new mongoose.Schema({
       message: 'Passwords are not the same!',
     },
   },
+  passwordChangedAt: Date,
 });
 
 /**
@@ -67,6 +68,25 @@ userSchema.methods.correctPassword = async function (
   userPassword,
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+/**
+ * Verifica se o usuário alterou a senha após o token JWT ter sido emitido.
+ * Compara o timestamp de alteração da senha com o timestamp do token JWT.
+ * @param {number} JWTTimestamp - Timestamp de emissão do token JWT.
+ * @returns {boolean} Retorna true se a senha foi alterada após o token, caso contrário, false.
+ */
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10,
+    );
+
+    return JWTTimestamp < changedTimestamp;
+  }
+  // Falso significa que não foi alterado
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);

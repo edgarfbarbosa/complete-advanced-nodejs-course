@@ -37,6 +37,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
+    passwordChangedAt: req.body.passwordChangedAt || undefined,
   });
 
   const token = signToken(newUser._id); // Gera o token JWT para o novo usuário
@@ -113,9 +114,20 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (!freshUser) {
     return next(
       new AppError(
-        'The token belonging to this tokes user does no longer exists.',
+        'The user belonging to this tokes user does no longer exists.',
         401,
       ),
+    );
+  }
+
+  // 4) Verifica se o usuário mudou a senha após o token ser emitido
+  /**
+   * Se a senha foi alterada após o token (`decoded.iat`), retorna um erro 401,
+   * forçando o login novamente para gerar um novo token.
+   */
+  if (freshUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password! Please log in again.', 401),
     );
   }
 
